@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
       home: MainScreen(),
       routes: {
         '/details': (context) => ItemDetails(),
+        '/logout': (context) => LogoutPage(),
       },
     );
   }
@@ -97,11 +99,40 @@ class ProfilePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Profile'),
       ),
-      body: Center(
-        child: Text(
-          'Profile Page',
-          style: TextStyle(fontSize: 24),
-        ),
+      body: ListView(
+        children: <Widget>[
+          ListTile(
+            leading: Icon(Icons.account_circle),
+            title: Text('Username'),
+            subtitle: Text('User123'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.email),
+            title: Text('Email'),
+            subtitle: Text('user@example.com'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.phone),
+            title: Text('Phone'),
+            subtitle: Text('+123 456 789'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Logout'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+        ],
       ),
     );
   }
@@ -144,7 +175,31 @@ class GridItem extends StatelessWidget {
   }
 }
 
-class ItemDetails extends StatelessWidget {
+class LogoutPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Logout'),
+      ),
+      body: Center(
+        child: Text(
+          'You have been logged out',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+class ItemDetails extends StatefulWidget {
+  @override
+  State<ItemDetails> createState() => _ItemDetailsState();
+}
+
+class _ItemDetailsState extends State<ItemDetails> {
+  int _counter = 1;
+
   @override
   Widget build(BuildContext context) {
     final String imageUrl =
@@ -152,17 +207,75 @@ class ItemDetails extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Item Details'),
+        title: Text(imageUrl.split('=').last),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.network(imageUrl),
-            SizedBox(height: 20),
-            Text(
-              imageUrl.split('=').last,
-              style: TextStyle(fontSize: 24),
+            Container(
+              width: double.infinity,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Aqua - Rp.5000",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "descriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription",
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Jumlah:',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () {
+                              setState(() {
+                                if (_counter > 1) _counter--;
+                              });
+                            },
+                          ),
+                          Text(
+                            '$_counter',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () {
+                              setState(() {
+                                _counter++;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {},
+                child: Text('Buy Now'),
+              ),
             ),
           ],
         ),
