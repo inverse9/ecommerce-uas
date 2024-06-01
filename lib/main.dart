@@ -1,5 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class Product {
+  final int id;
+  final int shopId;
+  final String shopName;
+  final String name;
+  final String description;
+  final double price;
+  final String image;
+
+  Product(
+      {required this.id,
+      required this.shopId,
+      required this.shopName,
+      required this.name,
+      required this.description,
+      required this.price,
+      required this.image});
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as int,
+      shopId: json['shop_id'] as int,
+      shopName: json['shopName'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      price: (json['price'] as num).toDouble(),
+      image: json['image'] as String,
+    );
+  }
+}
 
 void main() {
   runApp(MyApp());
@@ -64,84 +96,76 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-class HomePage extends StatelessWidget {
-  final List<String> items = List.generate(
-      20,
-      (index) =>
-          "https://via.placeholder.com/150/0000FF/808080?text=Item+$index");
-
+class HomePage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Products'),
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(10.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10.0,
-          mainAxisSpacing: 10.0,
-        ),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return GridItem(items[index]);
-        },
-      ),
-    );
-  }
+  State<HomePage> createState() => _HomePageState();
 }
 
-class ProfilePage extends StatelessWidget {
+class _HomePageState extends State<HomePage> {
+  late Future<List<Product>> futureProducts;
+
+  // final List<String> items = List.generate(
+  //     20,
+  //     (index) =>
+  //         "https://via.placeholder.com/150/0000FF/808080?text=Item+$index");
+
+  @override
+  void initState() {
+    super.initState();
+    futureProducts = fetchProducts();
+  }
+
+  Future<List<Product>> fetchProducts() async {
+    final response =
+        await http.get(Uri.parse('http://localhost:3001/products'));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      List<dynamic> data = jsonResponse['data'];
+      print(data);
+      return data.map((product) => Product.fromJson(product)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-      ),
-      body: ListView(
-        children: <Widget>[
-          ListTile(
-            leading: Icon(Icons.account_circle),
-            title: Text('Username'),
-            subtitle: Text('User123'),
-            onTap: () {
-              Navigator.pushNamed(context, '/logout');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.email),
-            title: Text('Email'),
-            subtitle: Text('user@example.com'),
-            onTap: () {
-              Navigator.pushNamed(context, '/logout');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.phone),
-            title: Text('Phone'),
-            subtitle: Text('+123 456 789'),
-            onTap: () {
-              Navigator.pushNamed(context, '/logout');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Logout'),
-            onTap: () {
-              Navigator.pushNamed(context, '/logout');
-            },
-          ),
-        ],
-      ),
-    );
+        appBar: AppBar(
+          title: Text('Products'),
+        ),
+        body: FutureBuilder<List<Product>>(
+          future: futureProducts,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List<Product> products = snapshot.data!;
+              return GridView.builder(
+                padding: const EdgeInsets.all(10.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  return GridItem(products[index]);
+                },
+              );
+            } else if (snapshot.hasError) {
+              print(snapshot.error);
+              return Center(child: Text("Error: ${snapshot.error}"));
+            }
+            return Center(child: CircularProgressIndicator());
+          },
+        ));
   }
 }
 
 class GridItem extends StatelessWidget {
-  final String imageUrl;
+  final Product product;
 
-  GridItem(this.imageUrl);
+  GridItem(this.product);
 
   @override
   Widget build(BuildContext context) {
@@ -150,14 +174,19 @@ class GridItem extends StatelessWidget {
         Navigator.pushNamed(
           context,
           '/details',
-          arguments: imageUrl,
+          arguments: {
+            'image': product.image,
+            'name': product.name,
+            'description': product.description,
+            'price': product.price,
+          },
         );
       },
       child: Column(
         children: [
           Expanded(
             child: Image.network(
-              imageUrl,
+              product.image,
               fit: BoxFit.cover,
               width: double.infinity,
             ),
@@ -165,28 +194,11 @@ class GridItem extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              imageUrl.split('=').last, // Extracting the item text from the URL
+              product.name,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class LogoutPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Logout'),
-      ),
-      body: Center(
-        child: Text(
-          'You have been logged out',
-          style: TextStyle(fontSize: 24),
-        ),
       ),
     );
   }
@@ -202,12 +214,16 @@ class _ItemDetailsState extends State<ItemDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final String imageUrl =
-        ModalRoute.of(context)!.settings.arguments as String;
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final String image = args['image'];
+    final String name = args['name'];
+    final double price = args['price'];
+    final String description = args['description'];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(imageUrl.split('=').last),
+        title: Text(image.split('=').last),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -216,7 +232,7 @@ class _ItemDetailsState extends State<ItemDetails> {
             Container(
               width: double.infinity,
               child: Image.network(
-                imageUrl,
+                image,
                 fit: BoxFit.cover,
               ),
             ),
@@ -226,13 +242,11 @@ class _ItemDetailsState extends State<ItemDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Aqua - Rp.5000",
+                    "${name} - Rp${price}",
                     style: TextStyle(fontSize: 18),
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    "descriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription",
-                  ),
+                  Text(description),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,6 +293,69 @@ class _ItemDetailsState extends State<ItemDetails> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class LogoutPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Logout'),
+      ),
+      body: Center(
+        child: Text(
+          'You have been logged out',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+      ),
+      body: ListView(
+        children: <Widget>[
+          ListTile(
+            leading: Icon(Icons.account_circle),
+            title: Text('Username'),
+            subtitle: Text('User123'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.email),
+            title: Text('Email'),
+            subtitle: Text('user@example.com'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.phone),
+            title: Text('Phone'),
+            subtitle: Text('+123 456 789'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Logout'),
+            onTap: () {
+              Navigator.pushNamed(context, '/logout');
+            },
+          ),
+        ],
       ),
     );
   }
