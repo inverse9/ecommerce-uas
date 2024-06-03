@@ -11,14 +11,15 @@ class Product {
   final double price;
   final String image;
 
-  Product(
-      {required this.id,
-      required this.shopId,
-      required this.shopName,
-      required this.name,
-      required this.description,
-      required this.price,
-      required this.image});
+  Product({
+    required this.id,
+    required this.shopId,
+    required this.shopName,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.image,
+  });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
@@ -49,18 +50,29 @@ class MyApp extends StatelessWidget {
       routes: {
         '/details': (context) => ItemDetails(),
         '/logout': (context) => LogoutPage(),
+        '/transactions': (context) => TransactionsPage(),
       },
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
+  final int initialIndex;
+
+  MainScreen({this.initialIndex = 0});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   static List<Widget> _pages = <Widget>[
     HomePage(),
@@ -104,11 +116,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<List<Product>> futureProducts;
 
-  // final List<String> items = List.generate(
-  //     20,
-  //     (index) =>
-  //         "https://via.placeholder.com/150/0000FF/808080?text=Item+$index");
-
   @override
   void initState() {
     super.initState();
@@ -122,7 +129,6 @@ class _HomePageState extends State<HomePage> {
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
       List<dynamic> data = jsonResponse['data'];
-      print(data);
       return data.map((product) => Product.fromJson(product)).toList();
     } else {
       throw Exception('Failed to load products');
@@ -132,33 +138,34 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Products'),
-        ),
-        body: FutureBuilder<List<Product>>(
-          future: futureProducts,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              List<Product> products = snapshot.data!;
-              return GridView.builder(
-                padding: const EdgeInsets.all(10.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0,
-                ),
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  return GridItem(products[index]);
-                },
-              );
-            } else if (snapshot.hasError) {
-              print(snapshot.error);
-              return Center(child: Text("Error: ${snapshot.error}"));
-            }
-            return Center(child: CircularProgressIndicator());
-          },
-        ));
+      appBar: AppBar(
+        title: Text('Products'),
+      ),
+      body: FutureBuilder<List<Product>>(
+        future: futureProducts,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Product> products = snapshot.data!;
+            return GridView.builder(
+              padding: const EdgeInsets.all(10.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return GridItem(products[index]);
+              },
+            );
+          } else if (snapshot.hasError) {
+            print(snapshot.error);
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
   }
 }
 
@@ -223,7 +230,7 @@ class _ItemDetailsState extends State<ItemDetails> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(image.split('=').last),
+        title: Text(name),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -287,12 +294,69 @@ class _ItemDetailsState extends State<ItemDetails> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  _showConfirmationDialog(context);
+                },
                 child: Text('Buy Now'),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Konfirmasi"),
+          content: Text("Anda yakin ingin membeli produk ini?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _buyNow(context);
+              },
+              child: Text("Confirm"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _buyNow(BuildContext context) {
+    // Add your purchase logic here
+    // For demonstration, we simply navigate to the profile page and then to transactions
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => MainScreen(initialIndex: 1)),
+      (Route<dynamic> route) => false,
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TransactionsPage()),
+    );
+  }
+}
+
+class TransactionsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Transactions'),
+      ),
+      body: Center(
+        child: Text('This is the Transactions page.'),
       ),
     );
   }
@@ -346,6 +410,15 @@ class ProfilePage extends StatelessWidget {
             subtitle: Text('+123 456 789'),
             onTap: () {
               Navigator.pushNamed(context, '/logout');
+            },
+          ),
+          ListTile(
+            title: Text('Transactions'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TransactionsPage()),
+              );
             },
           ),
           ListTile(
