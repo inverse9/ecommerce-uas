@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/details': (context) => ItemDetails(),
         '/logout': (context) => LogoutPage(),
-        '/transactions': (context) => TransactionsPage(),
+        '/transactions': (context) => TransactionsPage(userId: 1),
         '/cart': (context) => CartPage(userId: 1), // Assuming user ID 1 for now
       },
     );

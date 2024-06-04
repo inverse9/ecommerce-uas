@@ -1,6 +1,6 @@
+import 'package:ecommerce/transactions_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'profile_page.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -22,7 +22,9 @@ class _MainScreenState extends State<MainScreen> {
 
   static List<Widget> _pages = <Widget>[
     HomePage(),
-    ProfilePage(),
+    TransactionsPage(
+      userId: 1,
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -42,8 +44,8 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.money_rounded),
+            label: 'Transactions',
           ),
         ],
         currentIndex: _selectedIndex,
