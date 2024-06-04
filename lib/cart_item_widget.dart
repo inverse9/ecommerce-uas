@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'cart_item.dart';
+import 'cart_item_model.dart';
 
 class CartItemWidget extends StatefulWidget {
   final CartItem cartItem;

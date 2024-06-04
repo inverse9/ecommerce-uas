@@ -1,6 +1,9 @@
 import 'package:ecommerce/transactions_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import 'package:provider/provider.dart';
+
+import 'user_provider.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -35,6 +38,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    int userId = Provider.of<UserProvider>(context).userId;
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(

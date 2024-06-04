@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'cart_item.dart';
+import 'cart_item_model.dart';
 import 'cart_item_widget.dart';
 
 class CartPage extends StatefulWidget {
