@@ -34,6 +34,41 @@ class Product {
   }
 }
 
+class CartItem {
+  final int id;
+  final int userId;
+  final int productId;
+  final int amount;
+  final String userName;
+  final String productName;
+  final double price;
+  final String image;
+
+  CartItem({
+    required this.id,
+    required this.userId,
+    required this.productId,
+    required this.amount,
+    required this.userName,
+    required this.productName,
+    required this.price,
+    required this.image,
+  });
+
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      id: json['id'] as int,
+      userId: json['user_id'] as int,
+      productId: json['product_id'] as int,
+      amount: json['amount'] as int,
+      userName: json['userName'] as String,
+      productName: json['productName'] as String,
+      image: json['productImage'] as String,
+      price: (json['productPrice'] as num).toDouble(),
+    );
+  }
+}
+
 void main() {
   runApp(MyApp());
 }
@@ -51,6 +86,7 @@ class MyApp extends StatelessWidget {
         '/details': (context) => ItemDetails(),
         '/logout': (context) => LogoutPage(),
         '/transactions': (context) => TransactionsPage(),
+        '/cart': (context) => CartPage(userId: 1), // Assuming user ID 1 for now
       },
     );
   }
@@ -140,6 +176,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Products'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/cart');
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Product>>(
         future: futureProducts,
@@ -186,6 +230,7 @@ class GridItem extends StatelessWidget {
             'name': product.name,
             'description': product.description,
             'price': product.price,
+            'id': product.id,
           },
         );
       },
@@ -219,6 +264,73 @@ class ItemDetails extends StatefulWidget {
 class _ItemDetailsState extends State<ItemDetails> {
   int _counter = 1;
 
+  Future<void> addToCart(int userId, int productId, int amount) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3001/cart'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'user_id': userId,
+        'product_id': productId,
+        'amount': amount,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Item added to cart');
+    } else {
+      throw Exception('Failed to add item to cart');
+    }
+  }
+
+  void _buyNow(BuildContext context, int productId, int amount) async {
+    int userId =
+        1; // Assuming a static user ID for now; replace with actual logic
+    try {
+      await addToCart(userId, productId, amount);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+        (Route<dynamic> route) => false,
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CartPage(userId: userId)),
+      );
+    } catch (e) {
+      print('Failed to add to cart: $e');
+    }
+  }
+
+  void _showConfirmationDialog(
+      BuildContext context, int productId, int amount) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmation"),
+          content: Text("Are you sure you want to buy this product?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _buyNow(context, productId, amount);
+              },
+              child: Text("Confirm"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> args =
@@ -227,10 +339,19 @@ class _ItemDetailsState extends State<ItemDetails> {
     final String name = args['name'];
     final double price = args['price'];
     final String description = args['description'];
+    final int productId = args['id']; // Ensure product ID is passed
 
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/cart');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -249,7 +370,7 @@ class _ItemDetailsState extends State<ItemDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${name} - Rp${price}",
+                    "$name - Rp${price}",
                     style: TextStyle(fontSize: 18),
                   ),
                   SizedBox(height: 8),
@@ -259,7 +380,7 @@ class _ItemDetailsState extends State<ItemDetails> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Jumlah:',
+                        'Amount:',
                         style: TextStyle(fontSize: 18),
                       ),
                       Row(
@@ -295,55 +416,14 @@ class _ItemDetailsState extends State<ItemDetails> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: () {
-                  _showConfirmationDialog(context);
+                  _showConfirmationDialog(context, productId, _counter);
                 },
-                child: Text('Buy Now'),
+                child: Text('Add to cart'),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  void _showConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Konfirmasi"),
-          content: Text("Anda yakin ingin membeli produk ini?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _buyNow(context);
-              },
-              child: Text("Confirm"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _buyNow(BuildContext context) {
-    // Add your purchase logic here
-    // For demonstration, we simply navigate to the profile page and then to transactions
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen(initialIndex: 1)),
-      (Route<dynamic> route) => false,
-    );
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TransactionsPage()),
     );
   }
 }
@@ -374,6 +454,58 @@ class LogoutPage extends StatelessWidget {
           'You have been logged out',
           style: TextStyle(fontSize: 24),
         ),
+      ),
+    );
+  }
+}
+
+class CartPage extends StatelessWidget {
+  final int userId;
+
+  CartPage({required this.userId});
+
+  Future<List<CartItem>> fetchCartItems() async {
+    final response =
+        await http.get(Uri.parse('http://localhost:3001/cart?user_id=$userId'));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      List<dynamic> data = jsonResponse['data'];
+      return data.map((item) => CartItem.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load cart items');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cart'),
+      ),
+      body: FutureBuilder<List<CartItem>>(
+        future: fetchCartItems(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No items in cart'));
+          } else {
+            List<CartItem> products = snapshot.data!;
+            return ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Image.network(products[index].image),
+                  title: Text(products[index].productName),
+                  subtitle: Text('Rp${products[index].price}'),
+                );
+              },
+            );
+          }
+        },
       ),
     );
   }
