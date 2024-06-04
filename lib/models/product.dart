@@ -4,7 +4,7 @@ class Product {
   double price;
   String description;
   String image;
-  int shop_id;
+  //int shop_id;
   // String shop_name;
 
   Product({
@@ -13,7 +13,7 @@ class Product {
     required this.price,
     required this.description,
     required this.image,
-    required this.shop_id,
+    //required this.shop_id,
     //required this.shop_name,
   });
 
@@ -23,8 +23,8 @@ class Product {
         name: json['name'],
         description: json['description'],
         price: json['price'],
-        image: json['image'],
-        shop_id: json['shop_id']);
+        image: json['image']);
+    //shop_id: json['shop_id']);
     //shop_name: json['shop_name']);
   }
 
@@ -34,7 +34,7 @@ class Product {
       'price': price,
       'description': description,
       'image': image,
-      'shop_id': shop_id,
+      //'shop_id': shop_id,
       //'shop_name': shop_name
     };
   }

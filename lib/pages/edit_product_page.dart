@@ -28,7 +28,7 @@ class _EditProductPageState extends State<EditProductPage> {
     _priceController.text = widget.product.price.toString();
     _descriptionController.text = widget.product.description;
     _imageController.text = widget.product.image;
-    _shopidController.text = widget.product.shop_id.toString();
+    //_shopidController.text = widget.product.shop_id.toString();
     //_shopnameController.text = widget.product.shop_name;
   }
 
@@ -65,6 +65,28 @@ class _EditProductPageState extends State<EditProductPage> {
                   return null;
                 },
               ),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter description';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _imageController,
+                decoration: InputDecoration(labelText: 'image'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter image';
+                  }
+                  return null;
+                },
+              ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
@@ -82,7 +104,7 @@ class _EditProductPageState extends State<EditProductPage> {
                       price: price,
                       description: description,
                       image: image,
-                      shop_id: shop_id,
+                      //shop_id: shop_id,
                       //shop_name: shop_name,
                     );
 
