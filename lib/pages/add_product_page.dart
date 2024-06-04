@@ -11,6 +11,10 @@ class _AddProductPageState extends State<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _imageController = TextEditingController();
+  final _shopIdController = TextEditingController();
+  //final _shopnameController = TextEditingController();
   final ApiService apiService = ApiService();
 
   @override
@@ -52,8 +56,19 @@ class _AddProductPageState extends State<AddProductPage> {
                   if (_formKey.currentState!.validate()) {
                     final name = _nameController.text;
                     final price = double.parse(_priceController.text);
+                    final description = _descriptionController.text;
+                    final image = _imageController.text;
+                    final shop_id = int.parse(_shopIdController.text);
+                    //final shop_name = _shopnameController.text;
 
-                    final product = Product(name: name, price: price);
+                    final product = Product(
+                      name: name,
+                      price: price,
+                      description: description,
+                      image: image,
+                      shop_id: shop_id,
+                      //shop_name: shop_name,
+                    );
 
                     await apiService.createProduct(product);
 

@@ -15,6 +15,10 @@ class _EditProductPageState extends State<EditProductPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _imageController = TextEditingController();
+  final _shopidController = TextEditingController();
+  //final _shopnameController = TextEditingController();
   final ApiService apiService = ApiService();
 
   @override
@@ -22,6 +26,10 @@ class _EditProductPageState extends State<EditProductPage> {
     super.initState();
     _nameController.text = widget.product.name;
     _priceController.text = widget.product.price.toString();
+    _descriptionController.text = widget.product.description;
+    _imageController.text = widget.product.image;
+    _shopidController.text = widget.product.shop_id.toString();
+    //_shopnameController.text = widget.product.shop_name;
   }
 
   @override
@@ -63,11 +71,19 @@ class _EditProductPageState extends State<EditProductPage> {
                   if (_formKey.currentState!.validate()) {
                     final name = _nameController.text;
                     final price = double.parse(_priceController.text);
+                    final description = _descriptionController.text;
+                    final image = _imageController.text;
+                    final shop_id = int.parse(_shopidController.text);
+                    //final shop_name = _shopnameController.text;
 
                     final updatedProduct = Product(
                       id: widget.product.id,
                       name: name,
                       price: price,
+                      description: description,
+                      image: image,
+                      shop_id: shop_id,
+                      //shop_name: shop_name,
                     );
 
                     await apiService.updateProduct(updatedProduct);

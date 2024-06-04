@@ -3,13 +3,21 @@ import 'package:http/http.dart' as http;
 import '../models/product.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/products';
+  static const String baseUrl = 'http://localhost:3001/products';
 
   Future<List<Product>> getProducts() async {
     final response = await http.get(Uri.parse(baseUrl));
     if (response.statusCode == 200) {
-      Iterable jsonResponse = json.decode(response.body);
-      return jsonResponse.map((product) => Product.fromJson(product)).toList();
+      final jsonResponse = json.decode(response.body);
+      print(
+          'Response: $jsonResponse'); // Tambahkan ini untuk memeriksa respons API
+      if (jsonResponse is Map<String, dynamic> &&
+          jsonResponse.containsKey('data')) {
+        List<dynamic> data = jsonResponse['data'];
+        return data.map((product) => Product.fromJson(product)).toList();
+      } else {
+        throw Exception('Invalid response format');
+      }
     } else {
       throw Exception('Failed to load products');
     }
@@ -18,7 +26,10 @@ class ApiService {
   Future<Product> getProduct(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/$id'));
     if (response.statusCode == 200) {
-      return Product.fromJson(json.decode(response.body));
+      final jsonResponse = json.decode(response.body);
+      print(
+          'Response: $jsonResponse'); // Tambahkan ini untuk memeriksa respons API
+      return Product.fromJson(jsonResponse);
     } else {
       throw Exception('Failed to load product');
     }
@@ -31,7 +42,10 @@ class ApiService {
       body: json.encode(product.toJson()),
     );
     if (response.statusCode == 201) {
-      return Product.fromJson(json.decode(response.body));
+      final jsonResponse = json.decode(response.body);
+      print(
+          'Response: $jsonResponse'); // Tambahkan ini untuk memeriksa respons API
+      return Product.fromJson(jsonResponse);
     } else {
       throw Exception('Failed to create product');
     }
@@ -44,7 +58,10 @@ class ApiService {
       body: json.encode(product.toJson()),
     );
     if (response.statusCode == 200) {
-      return Product.fromJson(json.decode(response.body));
+      final jsonResponse = json.decode(response.body);
+      print(
+          'Response: $jsonResponse'); // Tambahkan ini untuk memeriksa respons API
+      return Product.fromJson(jsonResponse);
     } else {
       throw Exception('Failed to update product');
     }
@@ -53,6 +70,7 @@ class ApiService {
   Future<void> deleteProduct(int id) async {
     final response = await http.delete(Uri.parse('$baseUrl/$id'));
     if (response.statusCode == 200) {
+      print('Product deleted'); // Tambahkan ini untuk memeriksa respons API
       return;
     } else {
       throw Exception('Failed to delete product');
