@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
     String password = _passwordController.text;
 
     final response = await http.get(
-      Uri.parse('http://192.168.1.27:3001/users/$username/$password'),
+      Uri.parse('http://192.168.33.171:3001/users/$username/$password'),
     );
 
     if (response.statusCode == 200) {

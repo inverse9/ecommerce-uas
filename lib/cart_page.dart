@@ -90,7 +90,7 @@ class _CartPageState extends State<CartPage> {
 
   Future<List<CartItem>> fetchCartItems() async {
     final response = await http.get(
-        Uri.parse('http://192.168.1.27:3001/cart?user_id=${widget.userId}'));
+        Uri.parse('http://192.168.33.171:3001/cart?user_id=${widget.userId}'));
 
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -121,7 +121,7 @@ class _CartPageState extends State<CartPage> {
       }).toList();
 
       final response = await http.post(
-        Uri.parse('http://192.168.1.27:3001/transaction-batch'),
+        Uri.parse('http://192.168.33.171:3001/transaction-batch'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Accept': 'application/json',
@@ -152,7 +152,7 @@ class _CartPageState extends State<CartPage> {
 
   Future<void> _deleteCart(int userId) async {
     final response = await http.delete(
-      Uri.parse('http://192.168.1.27:3001/cart/$userId'),
+      Uri.parse('http://192.168.33.171:3001/cart/$userId'),
     );
 
     if (response.statusCode == 200) {

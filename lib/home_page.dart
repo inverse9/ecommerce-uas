@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<List<Product>> fetchProducts() async {
     final response =
-        await http.get(Uri.parse('http://192.168.1.27:3001/products'));
+        await http.get(Uri.parse('http://192.168.33.171:3001/products'));
 
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);

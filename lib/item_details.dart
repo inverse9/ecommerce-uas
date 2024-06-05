@@ -17,7 +17,7 @@ class _ItemDetailsState extends State<ItemDetails> {
 
   Future<void> addToCart(int userId, int productId, int amount) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.27:3001/cart'),
+      Uri.parse('http://192.168.33.171:3001/cart'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
