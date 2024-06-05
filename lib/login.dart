@@ -56,15 +56,14 @@ class _LoginPageState extends State<LoginPage> {
     String password = _passwordController.text;
 
     final response = await http.get(
-      Uri.parse('http://localhost:3001/users/$username/$password'),
+      Uri.parse('http://192.168.1.27:3001/users/$username/$password'),
     );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print(responseData["data"]);
-      // final int userId = responseData["data"]["id"];
+      final int userId = responseData["data"]["id"];
 
-      // Provider.of<UserProvider>(context, listen: false).setUserId(userId);
+      Provider.of<UserProvider>(context, listen: false).setUserId(userId);
       if (responseData['data']['shopId'] == null) {
         Navigator.pushReplacementNamed(context, '/main-screen');
       } else {

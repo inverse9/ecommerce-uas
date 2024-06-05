@@ -23,13 +23,6 @@ class _MainScreenState extends State<MainScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  static List<Widget> _pages = <Widget>[
-    HomePage(),
-    TransactionsPage(
-      userId: 1,
-    ),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -40,6 +33,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     int userId = Provider.of<UserProvider>(context).userId;
 
+    List<Widget> _pages = <Widget>[
+      HomePage(),
+      TransactionsPage(
+        userId: userId,
+      ),
+    ];
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(

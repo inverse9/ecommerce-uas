@@ -21,10 +21,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Future<List<Transaction>> fetchTransactions() async {
-    print(widget.userId);
-
-    final response = await http
-        .get(Uri.parse('http://localhost:3001/transactions/${widget.userId}'));
+    final response = await http.get(
+        Uri.parse('http://192.168.1.27:3001/transactions/${widget.userId}'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonResponse = json.decode(response.body)['data'];

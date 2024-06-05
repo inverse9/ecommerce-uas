@@ -17,7 +17,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
   @override
   void initState() {
     super.initState();
-    _amount = widget.cartItem.amount; // Initialize with the initial amount
+    _amount = widget.cartItem.amount;
   }
 
   void _incrementAmount() {

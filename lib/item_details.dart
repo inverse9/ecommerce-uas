@@ -3,6 +3,9 @@ import 'package:ecommerce/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:provider/provider.dart';
+
+import 'user_provider.dart';
 
 class ItemDetails extends StatefulWidget {
   @override
@@ -14,7 +17,7 @@ class _ItemDetailsState extends State<ItemDetails> {
 
   Future<void> addToCart(int userId, int productId, int amount) async {
     final response = await http.post(
-      Uri.parse('http://localhost:3001/cart'),
+      Uri.parse('http://192.168.1.27:3001/cart'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -32,9 +35,8 @@ class _ItemDetailsState extends State<ItemDetails> {
     }
   }
 
-  void _buyNow(BuildContext context, int productId, int amount) async {
-    int userId =
-        1; // Assuming a static user ID for now; replace with actual logic
+  void _buyNow(
+      BuildContext context, int productId, int amount, int userId) async {
     try {
       await addToCart(userId, productId, amount);
       Navigator.pushAndRemoveUntil(
@@ -52,13 +54,13 @@ class _ItemDetailsState extends State<ItemDetails> {
   }
 
   void _showConfirmationDialog(
-      BuildContext context, int productId, int amount) {
+      BuildContext context, int productId, int amount, int userId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Confirmation"),
-          content: Text("Are you sure you want to buy this product?"),
+          content: Text("Are you sure you want to add this product?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -69,7 +71,7 @@ class _ItemDetailsState extends State<ItemDetails> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _buyNow(context, productId, amount);
+                _buyNow(context, productId, amount, userId);
               },
               child: Text("Confirm"),
             ),
@@ -81,6 +83,7 @@ class _ItemDetailsState extends State<ItemDetails> {
 
   @override
   Widget build(BuildContext context) {
+    int userId = Provider.of<UserProvider>(context).userId;
     final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String image = args['image'];
@@ -164,7 +167,7 @@ class _ItemDetailsState extends State<ItemDetails> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: () {
-                  _showConfirmationDialog(context, productId, _counter);
+                  _showConfirmationDialog(context, productId, _counter, userId);
                 },
                 child: Text('Add to cart'),
               ),

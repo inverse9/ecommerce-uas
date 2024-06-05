@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int userId = Provider.of<UserProvider>(context).userId;
-    print(userId);
     return MaterialApp(
       title: 'e-commerce',
       theme: ThemeData(
